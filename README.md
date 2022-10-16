@@ -1,4 +1,4 @@
-# speedmirror
+# SpeedMirror
 ## Find the fastest Kali Linux mirror
 
 ### Usage
