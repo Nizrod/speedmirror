@@ -35,6 +35,7 @@ def create_source_list(link, https=False):
         http_link = f'deb {link} kali-rolling main contrib non-free'
         with open('sources.list', 'w') as f:
             f.write(http_link)
+    print(f'Created sources.list file with {link}')
 
 # Get all links from a url
 def find_links(url):
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     best_mirror = get_fastest_mirror(domains)
     best_mirror_link = links[best_mirror[0]]
 
-    create_source_list(best_mirror_link, https=False)
+    create_source_list(best_mirror_link, https=True)
 
     print('--------------------------------')
     print(best_mirror)
