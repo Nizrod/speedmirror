@@ -2,6 +2,7 @@
 
 import os
 import requests
+import concurrent.futures
 from pythonping import ping
 import bs4 as BeautifulSoup
 
@@ -22,8 +23,10 @@ def ping_url(url):
     print(f'Pinging: {url}')
     return ping(url).rtt_avg_ms
 
-def ping_all_urls(domains):
-    return list(map(ping_url, domains))
+def threadded_ping(domains):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        pings = executor.map(ping_url, domains)
+        return list(pings)
 
 def create_source_list(link, https=False):
     if https:
@@ -51,7 +54,7 @@ def get_domains(links):
     return list(map(lambda x: x.split('/')[2], links))
 
 def get_fastest_mirror(domains):
-    pings = ping_all_urls(domains)
+    pings = threadded_ping(domains)
     return pings.index(min(pings)), domains[pings.index(min(pings))], min(pings)
 
 if __name__ == "__main__":
