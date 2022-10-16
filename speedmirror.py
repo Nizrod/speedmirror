@@ -7,6 +7,9 @@ import concurrent.futures
 from pythonping import ping
 import bs4 as BeautifulSoup
 
+# Global variables
+verbose = False
+
 def contains_readme(url):
     if url.endswith("/README"):
         return True
@@ -21,10 +24,12 @@ def check_root():
 
 # Ping url and return avg ping
 def ping_url(url):
-    print(f'Pinging: {url}')
+    if verbose:
+        print(f'Pinging: {url}')
     return ping(url).rtt_avg_ms
 
 def threadded_ping(domains):
+    print('Getting ping times...')
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         pings = executor.map(ping_url, domains)
         return list(pings)
@@ -56,27 +61,32 @@ def get_fastest_mirror(domains):
 def parser():
     parser = argparse.ArgumentParser(description='Speedmirror - Find the fastest Kali Linux mirror')
     parser.add_argument('-s', '--https', action='store_true', help='Use https instead of http')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
     return parser.parse_args()
 
 if __name__ == "__main__":
 
     url = "https://http.kali.org/README.mirrorlist"
 
-    # Check if the user is root
-    check_root()
+    check_root() # Check if user is root
 
-    args = parser()
+    args = parser() # Parse arguments
+    verbose = args.verbose # Set verbose to true if -v is passed
 
-    links = find_links(url)
-    domains = get_domains(links)
-    best_mirror = get_fastest_mirror(domains)
-    best_mirror_link = links[best_mirror[0]]
+    links = find_links(url) # Get all links from url
+    domains = get_domains(links) # Get all domains from links
+    fastest_mirror = get_fastest_mirror(domains) # Get fastest mirror
+    fastest_mirror_link = links[fastest_mirror[0]] # Get link to fastest mirror
 
-    create_source_list(best_mirror_link, https=args.https)
+    create_source_list(fastest_mirror_link, https=args.https)
 
-    print('--------------------------------')
-    print(best_mirror)
-    print(f'index: {best_mirror[0]}')
-    print(f'domain: {best_mirror[1]}')
-    print(f'link: {best_mirror_link}')
-    print(f'avg speed: {best_mirror[2]}ms')
+    if verbose:
+        print('--------------------------------')
+        print(f'domain: {fastest_mirror[1]}')
+        print(f'link: {fastest_mirror_link}')
+        print(f'avg speed: {fastest_mirror[2]}ms')
+        print('--------------------------------')
+
+    print('')
+    print('Now you can run: sudo mv sources.list /etc/apt/sources.list')
+    print('')
