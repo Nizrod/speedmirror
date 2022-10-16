@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import os
+import argparse
 import requests
 import concurrent.futures
 from pythonping import ping
@@ -29,15 +30,10 @@ def threadded_ping(domains):
         return list(pings)
 
 def create_source_list(link, https=False):
-    if https:
-        https_link = f'deb {link} kali-rolling main contrib non-free'
-        with open('sources.list', 'w') as f:
-            f.write(https_link)
-    else:
+    if not https:
         link = link.replace('https://', 'http://')
-        http_link = f'deb {link} kali-rolling main contrib non-free'
-        with open('sources.list', 'w') as f:
-            f.write(http_link)
+    with open('sources.list', 'w') as f:
+        f.write(link)
     print(f'Created sources.list file with {link}')
 
 # Get all links from a url
@@ -57,6 +53,11 @@ def get_fastest_mirror(domains):
     pings = threadded_ping(domains)
     return pings.index(min(pings)), domains[pings.index(min(pings))], min(pings)
 
+def parser():
+    parser = argparse.ArgumentParser(description='Speedmirror - Find the fastest Kali Linux mirror')
+    parser.add_argument('-s', '--https', action='store_true', help='Use https instead of http')
+    return parser.parse_args()
+
 if __name__ == "__main__":
 
     url = "https://http.kali.org/README.mirrorlist"
@@ -64,12 +65,14 @@ if __name__ == "__main__":
     # Check if the user is root
     check_root()
 
+    args = parser()
+
     links = find_links(url)
     domains = get_domains(links)
     best_mirror = get_fastest_mirror(domains)
     best_mirror_link = links[best_mirror[0]]
 
-    create_source_list(best_mirror_link, https=True)
+    create_source_list(best_mirror_link, https=args.https)
 
     print('--------------------------------')
     print(best_mirror)
