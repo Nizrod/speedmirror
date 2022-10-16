@@ -25,11 +25,16 @@ def ping_url(url):
 def ping_all_urls(domains):
     return list(map(ping_url, domains))
 
-def modify_source_list():
-    pass
-
-def change_to_http():
-    pass
+def create_source_list(link, https=False):
+    if https:
+        https_link = f'deb {link} kali-rolling main contrib non-free'
+        with open('sources.list', 'w') as f:
+            f.write(https_link)
+    else:
+        link = link.replace('https://', 'http://')
+        http_link = f'deb {link} kali-rolling main contrib non-free'
+        with open('sources.list', 'w') as f:
+            f.write(http_link)
 
 # Get all links from a url
 def find_links(url):
@@ -58,9 +63,13 @@ if __name__ == "__main__":
     links = find_links(url)
     domains = get_domains(links)
     best_mirror = get_fastest_mirror(domains)
+    best_mirror_link = links[best_mirror[0]]
+
+    create_source_list(best_mirror_link, https=False)
+
     print('--------------------------------')
     print(best_mirror)
     print(f'index: {best_mirror[0]}')
     print(f'domain: {best_mirror[1]}')
-    print(f'link: {links[best_mirror[0]]}')
+    print(f'link: {best_mirror_link}')
     print(f'avg speed: {best_mirror[2]}ms')
