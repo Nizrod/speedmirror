@@ -3,12 +3,16 @@
 import os
 import argparse
 import requests
+import pyfiglet
 import concurrent.futures
 from pythonping import ping
 import bs4 as BeautifulSoup
 
 # Global variables
 verbose = False
+
+def banner():
+    print(pyfiglet.figlet_format("SpeedMirror"))
 
 def contains_readme(url):
     if url.endswith("/README"):
@@ -69,6 +73,8 @@ if __name__ == "__main__":
     url = "https://http.kali.org/README.mirrorlist"
 
     check_root() # Check if user is root
+
+    banner() # Print banner
 
     args = parser() # Parse arguments
     verbose = args.verbose # Set verbose to true if -v is passed
